@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💰 복리 계산기 (1년 ~ 50년)</title>
+    <style>
+        /* CSS 스타일링 */
+        body {
+            font-family: 'Malgun Gothic', sans-serif;
+            background-color: #f4f7f6;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+        }
+        h2 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .input-group {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .input-item {
+            flex-grow: 1;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #34495e;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #1abc9c;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #16a085;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: right;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        th {
+            background-color: #e7f7f5;
+            color: #34495e;
+            font-weight: bold;
+            text-align: center;
+        }
+        td:first-child {
+            text-align: center;
+        }
+        #resultTableContainer {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ecf0f1;
+            border-radius: 8px;
+        }
+        .error-message {
+            color: #e74c3c;
+            text-align: center;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>💰 연 복리 계산기 (50년 시뮬레이션)</h2>
+
+        <div class="input-group">
+            <div class="input-item">
+                <label for="principal">원금 (₩)</label>
+                <input type="text" id="principal" value="1000000" placeholder="원금 입력 (예: 1000000)">
+            </div>
+            <div class="input-item">
+                <label for="rate">연 복리 이자율 (%)</label>
+                <input type="text" id="rate" value="5" placeholder="이자율 입력 (예: 5)">
+            </div>
+        </div>
+
+        <button onclick="calculateCompoundInterest()">계산하기</button>
+
+        <p id="errorMessage" class="error-message"></p>
+
+        <div id="resultTableContainer">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 30%;">기간 (년)</th>
+                        <th style="width: 70%;">복리 계산 금액 (원)</th>
+                    </tr>
+                </thead>
+                <tbody id="resultBody">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript 계산 로직
+        
+        function formatNumber(num) {
+            // 숫자를 쉼표 형식으로 포맷팅
+            return num.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+
+        function calculateCompoundInterest() {
+            const principalInput = document.getElementById('principal');
+            const rateInput = document.getElementById('rate');
+            const resultBody = document.getElementById('resultBody');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            // 입력값 정리 (쉼표 제거 및 숫자 변환)
+            const principal = parseFloat(principalInput.value.replace(/,/g, ''));
+            const annualRate = parseFloat(rateInput.value) / 100;
+            
+            // 오류 메시지 초기화
+            errorMessage.textContent = '';
+            resultBody.innerHTML = '';
+
+            // 입력 유효성 검사
+            if (isNaN(principal) || principal <= 0) {
+                errorMessage.textContent = '⚠️ 원금을 숫자로 정확히 입력해주세요. (0보다 커야 합니다)';
+                return;
+            }
+            if (isNaN(annualRate) || annualRate < 0) {
+                errorMessage.textContent = '⚠️ 이자율을 숫자로 정확히 입력해주세요. (0 이상이어야 합니다)';
+                return;
+            }
+
+            // 복리 계산 및 테이블 생성
+            let currentValue = principal;
+            for (let year = 1; year <= 50; year++) {
+                // 복리 계산: 미래 가치 = 이전 금액 * (1 + 이자율)
+                currentValue *= (1 + annualRate);
+
+                const row = resultBody.insertRow();
+                
+                // 1. 기간 (년)
+                const cellYear = row.insertCell();
+                cellYear.textContent = year;
+
+                // 2. 복리 계산 금액 (원)
+                const cellValue = row.insertCell();
+                cellValue.textContent = formatNumber(currentValue);
+                cellValue.style.fontWeight = 'bold'; // 금액 강조
+            }
+        }
+
+        // 페이지 로드 시 초기 계산 실행
+        window.onload = calculateCompoundInterest;
+    </script>
+</body>
+</html>
