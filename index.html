@@ -96,11 +96,17 @@
             margin-top: 15px;
             font-weight: bold;
         }
+        .target-result {
+            color: #2980b9;
+            text-align: center;
+            margin-top: 10px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>💰 연 복리 계산기 (50년 시뮬레이션)</h2>
+        <h2>💰 연 복리 계산기 (50년 시뮬레이션 + 목표 도달 년수)</h2>
 
         <div class="input-group">
             <div class="input-item">
@@ -111,11 +117,16 @@
                 <label for="rate">연 복리 이자율 (%)</label>
                 <input type="text" id="rate" value="5" placeholder="이자율 입력 (예: 5)">
             </div>
+            <div class="input-item">
+                <label for="target">목표 금액 (₩)</label>
+                <input type="text" id="target" placeholder="목표 금액 입력 (예: 100000000)">
+            </div>
         </div>
 
         <button onclick="calculateCompoundInterest()">계산하기</button>
 
         <p id="errorMessage" class="error-message"></p>
+        <p id="targetResult" class="target-result"></p>
 
         <div id="resultTableContainer">
             <table>
@@ -126,31 +137,35 @@
                     </tr>
                 </thead>
                 <tbody id="resultBody">
-                    </tbody>
+                </tbody>
             </table>
         </div>
     </div>
 
     <script>
-        // JavaScript 계산 로직
-        
+        // 숫자를 쉼표 형식으로 포맷팅
         function formatNumber(num) {
-            // 숫자를 쉼표 형식으로 포맷팅
             return num.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
 
         function calculateCompoundInterest() {
             const principalInput = document.getElementById('principal');
             const rateInput = document.getElementById('rate');
+            const targetInput = document.getElementById('target');
+
             const resultBody = document.getElementById('resultBody');
             const errorMessage = document.getElementById('errorMessage');
+            const targetResult = document.getElementById('targetResult');
             
             // 입력값 정리 (쉼표 제거 및 숫자 변환)
             const principal = parseFloat(principalInput.value.replace(/,/g, ''));
             const annualRate = parseFloat(rateInput.value) / 100;
+            const targetStr = targetInput.value.replace(/,/g, '').trim();
+            const target = targetStr ? parseFloat(targetStr) : null;
             
-            // 오류 메시지 초기화
+            // 메시지 초기화
             errorMessage.textContent = '';
+            targetResult.textContent = '';
             resultBody.innerHTML = '';
 
             // 입력 유효성 검사
@@ -162,23 +177,55 @@
                 errorMessage.textContent = '⚠️ 이자율을 숫자로 정확히 입력해주세요. (0 이상이어야 합니다)';
                 return;
             }
+            if (targetStr && (isNaN(target) || target <= 0)) {
+                errorMessage.textContent = '⚠️ 목표 금액을 숫자로 정확히 입력해주세요. (0보다 커야 합니다)';
+                return;
+            }
 
-            // 복리 계산 및 테이블 생성
+            // 1) 1년~50년 복리 계산 및 테이블 생성
             let currentValue = principal;
             for (let year = 1; year <= 50; year++) {
-                // 복리 계산: 미래 가치 = 이전 금액 * (1 + 이자율)
                 currentValue *= (1 + annualRate);
 
                 const row = resultBody.insertRow();
                 
-                // 1. 기간 (년)
                 const cellYear = row.insertCell();
                 cellYear.textContent = year;
 
-                // 2. 복리 계산 금액 (원)
                 const cellValue = row.insertCell();
                 cellValue.textContent = formatNumber(currentValue);
-                cellValue.style.fontWeight = 'bold'; // 금액 강조
+                cellValue.style.fontWeight = 'bold';
+            }
+
+            // 2) 목표 금액까지 걸리는 년수 계산 (옵션)
+            if (target) {
+                if (annualRate === 0) {
+                    if (principal >= target) {
+                        targetResult.textContent = `이미 초기 원금이 목표 금액(₩${formatNumber(target)}) 이상입니다.`;
+                    } else {
+                        targetResult.textContent = `연 이자율이 0%이므로 목표 금액(₩${formatNumber(target)})에 도달할 수 없습니다.`;
+                    }
+                    return;
+                }
+
+                if (principal >= target) {
+                    targetResult.textContent = `이미 초기 원금이 목표 금액(₩${formatNumber(target)}) 이상입니다.`;
+                    return;
+                }
+
+                let yearsToTarget = 0;
+                let valueForTarget = principal;
+
+                while (valueForTarget < target && yearsToTarget <= 1000) {
+                    valueForTarget *= (1 + annualRate);
+                    yearsToTarget++;
+                }
+
+                if (yearsToTarget > 1000) {
+                    targetResult.textContent = `이 설정으로는 현실적인 기간 내에 목표 금액(₩${formatNumber(target)})에 도달하기 어렵습니다.`;
+                } else {
+                    targetResult.textContent = `🎯 목표 금액 ₩${formatNumber(target)} 에 도달하려면 약 ${yearsToTarget}년이 필요합니다. (해당 시점 예상 금액: ₩${formatNumber(valueForTarget)})`;
+                }
             }
         }
 
