@@ -106,6 +106,14 @@
 </head>
 <body>
     <div class="container">
+
+        <!-- 📌 워렌 버핏 이미지 -->
+        <div style="text-align:center; margin-bottom:20px;">
+            <img src="warrenbuffett.png" 
+                 alt="워렌 버핏 이미지" 
+                 style="max-width:500px; border-radius:12px;">
+        </div>
+
         <h2>💰 연 복리 계산기 (50년 시뮬레이션 + 목표 도달 년수)</h2>
 
         <div class="input-group">
@@ -143,7 +151,6 @@
     </div>
 
     <script>
-        // 숫자를 쉼표 형식으로 포맷팅
         function formatNumber(num) {
             return num.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
@@ -157,18 +164,15 @@
             const errorMessage = document.getElementById('errorMessage');
             const targetResult = document.getElementById('targetResult');
             
-            // 입력값 정리 (쉼표 제거 및 숫자 변환)
             const principal = parseFloat(principalInput.value.replace(/,/g, ''));
             const annualRate = parseFloat(rateInput.value) / 100;
             const targetStr = targetInput.value.replace(/,/g, '').trim();
             const target = targetStr ? parseFloat(targetStr) : null;
             
-            // 메시지 초기화
             errorMessage.textContent = '';
             targetResult.textContent = '';
             resultBody.innerHTML = '';
 
-            // 입력 유효성 검사
             if (isNaN(principal) || principal <= 0) {
                 errorMessage.textContent = '⚠️ 원금을 숫자로 정확히 입력해주세요. (0보다 커야 합니다)';
                 return;
@@ -182,13 +186,11 @@
                 return;
             }
 
-            // 1) 1년~50년 복리 계산 및 테이블 생성
             let currentValue = principal;
             for (let year = 1; year <= 50; year++) {
                 currentValue *= (1 + annualRate);
 
                 const row = resultBody.insertRow();
-                
                 const cellYear = row.insertCell();
                 cellYear.textContent = year;
 
@@ -197,7 +199,6 @@
                 cellValue.style.fontWeight = 'bold';
             }
 
-            // 2) 목표 금액까지 걸리는 년수 계산 (옵션)
             if (target) {
                 if (annualRate === 0) {
                     if (principal >= target) {
@@ -229,7 +230,6 @@
             }
         }
 
-        // 페이지 로드 시 초기 계산 실행
         window.onload = calculateCompoundInterest;
     </script>
 </body>
